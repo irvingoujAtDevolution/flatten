@@ -71,6 +71,33 @@ fn main() -> Result<()> {
 
     eprintln!("🚶 Walking the repository tree and writing to file...");
 
+    // Normalize the filter path if provided
+    let normalized_filter_path = cli.path.as_ref().map(|p| {
+        // Use Path methods to properly handle the path
+        let mut components = p.components().collect::<Vec<_>>();
+        
+        // Remove current directory component if present
+        if let Some(std::path::Component::CurDir) = components.first() {
+            components.remove(0);
+        }
+        
+        // Reconstruct the path from components
+        let mut result = PathBuf::new();
+        for component in components {
+            result.push(component);
+        }
+        
+        if result.as_os_str().is_empty() {
+            None
+        } else {
+            Some(result)
+        }
+    }).flatten();
+
+    if let Some(ref filter_path) = normalized_filter_path {
+        eprintln!("🎯 Filtering files under path: {}", filter_path.display());
+    }
+
     // Walk the tree recursively.
     tree.walk(git2::TreeWalkMode::PreOrder, |root, entry| {
         // We are only interested in files (blobs).
@@ -82,7 +109,7 @@ fn main() -> Result<()> {
         let path = Path::new(root).join(entry.name().unwrap_or("<INVALID_UTF8>"));
 
         // If a path filter is specified, only include files under that path.
-        if let Some(ref filter_path) = cli.path {
+        if let Some(ref filter_path) = normalized_filter_path {
             if !path.starts_with(filter_path) {
                 return TreeWalkResult::Ok;
             }
