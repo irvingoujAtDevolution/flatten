@@ -2,17 +2,19 @@
 name = "repo-flatten"
 version = "0.1.0"
 edition = "2024"
-
 description = "A utility to flatten all files in the repository into a single file, consumed by LLMs. Will ignore .gitignore and hidden files."
+license = "MIT OR Apache-2.0"
+authors = ["Irving Ou <jou@devolutions.net>"]
+repository = "https://github.com/irvingoujAtDevolution/flatten"
+homepage = "https://github.com/irvingoujAtDevolution/flatten"
+documentation = "https://docs.rs/repo-flatten"
+readme = "README.md"
+keywords = ["git", "cli", "utility", "tool", "llm"]
+categories = ["command-line-utilities", "development-tools"]
 
 [[bin]]
 name = "flatten"
 path = "src/main.rs"
-license = "MIT OR Apache-2.0" # Choose a license - this is a common choice for Rust projects
-authors = ["Irving Ou <jou@devolutions.net>"] # Add yourself as an author
-repository = "https://github.com/irvingoujAtDevolution/flatten"# Link to the source code
-readme = "README.md" # Tells crates.io to display your README file
-keywords = ["git", "cli", "utility", "tool"] # Helps others discover your crate
 
 [dependencies]
 clap = { version = "4.5.4", features = ["derive"] }
