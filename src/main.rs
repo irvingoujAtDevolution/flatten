@@ -16,7 +16,7 @@ struct Cli {
     repo: PathBuf,
 
     /// The git revision to inspect (e.g., a branch, tag, or commit hash).
-    #[arg(short, long, value_name = "REVISION", default_value = "HEAD")]
+    #[arg(long, value_name = "REVISION", default_value = "HEAD")]
     rev: String,
 
     /// The path for the output file.
@@ -27,6 +27,10 @@ struct Cli {
         default_value = "flattened_files.txt"
     )]
     output: PathBuf,
+
+    /// Only flatten files under this path (relative to repository root).
+    #[arg(short, long, value_name = "PATH")]
+    path: Option<PathBuf>,
 }
 
 fn main() -> Result<()> {
@@ -76,20 +80,28 @@ fn main() -> Result<()> {
 
         // Combine the root path with the entry name to get the full path.
         let path = Path::new(root).join(entry.name().unwrap_or("<INVALID_UTF8>"));
+
+        // If a path filter is specified, only include files under that path.
+        if let Some(ref filter_path) = cli.path {
+            if !path.starts_with(filter_path) {
+                return TreeWalkResult::Ok;
+            }
+        }
+
         eprintln!("  -> Processing: {}", path.display());
 
         // Get the blob object from the repository using its ID.
         if let Ok(blob) = repo.find_blob(entry.id()) {
             // Write the file header.
-            if let Err(e) = writeln!(writer, "--- File: {} ---", path.display()) {
+            if let Err(_) = writeln!(writer, "--- File: {} ---", path.display()) {
                 return TreeWalkResult::Abort;
             }
 
             // Check if the blob content is binary. If so, write a placeholder.
             // Otherwise, write the actual content.
             if blob.is_binary() {
-                if let Err(e) = writeln!(writer, "[Binary file: content not included]\n") {
-                    eprintln!("Failed to write binary file placeholder: {}", e);
+                if let Err(_) = writeln!(writer, "[Binary file: content not included]\n") {
+                    eprintln!("Failed to write binary file placeholder");
                     return TreeWalkResult::Abort;
                 }
             } else {
