@@ -1,6 +1,6 @@
 [package]
 name = "repo-flatten"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A utility to flatten all files in the repository into a single file, consumed by LLMs. Will ignore .gitignore and hidden files."
 license = "MIT OR Apache-2.0"
